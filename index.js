@@ -88,12 +88,11 @@ async function startBot() {
     const command = text.toLowerCase().trim();
     // MENU
     if (command === "menu") {
-      await sock.sendMessage(from, {
-        text:
-         await sendBanner(
-    sock,
-    from,
-          BOT_BANNER +
+      await sendBanner(
+        sock,
+        from,
+
+        BOT_BANNER +
           "📋 *COMMANDS*\n\n" +
           "menu\n" +
           "orders\n" +
@@ -102,7 +101,7 @@ async function startBot() {
           "help\n" +
           "track ORDER_REFERENCE\n" +
           "ping",
-      });
+      );
 
       return;
     }
@@ -119,12 +118,10 @@ async function startBot() {
 
       const order = await getOrder(reference);
 
-      await sock.sendMessage(from, {
-        text:
-         await sendBanner(
-    sock,
-    from,
-          BOT_BANNER +
+      await sendBanner(
+        sock,
+        from,
+        BOT_BANNER +
           `📦 *ORDER TRACKING*\n\n` +
           `🆔 ${order.reference || "N/A"}\n` +
           `📱 ${order.phoneNumber || "N/A"}\n` +
@@ -132,26 +129,25 @@ async function startBot() {
           `📦 ${order.capacity || "N/A"}GB\n` +
           `💰 GHS ${order.price || "0"}\n` +
           `📌 Status: *${order.status || "N/A"}*`,
-      });
+      );
 
       return;
     }
 
     // HELP
     if (command === "help") {
-      await sock.sendMessage(from, {
-        text:
-         await sendBanner(
-    sock,
-    from,
-          BOT_BANNER +
+      await sendBanner(
+        sock,
+        from,
+
+        BOT_BANNER +
           "🤖 *STORE BOT HELP*\n\n" +
           "menu → Show commands\n" +
           "orders → Latest orders\n" +
           "balance → Wallet balance\n" +
           "stats → Store statistics\n" +
           "ping → Test bot",
-      });
+      );
 
       return;
     }
@@ -176,130 +172,22 @@ async function startBot() {
         totalRevenue += Number(o.price || 0);
       });
 
-      await sock.sendMessage(from, {
-        text:
-         await sendBanner(
-    sock,
-    from,
-          BOT_BANNER +
+      await sendBanner(
+        sock,
+        from,
+
+        BOT_BANNER +
           "📊 *STORE STATS*\n\n" +
           `📦 Total Orders: ${totalOrders}\n` +
           `✅ Completed: ${completedOrders}\n` +
           `⏳ Pending: ${pendingOrders}\n` +
           `❌ Failed: ${failedOrders}\n` +
           `💰 Revenue: GHS ${totalRevenue.toFixed(2)}`,
-      });
+      );
 
       return;
     }
     console.log("Message:", text);
-
-    app.post("/webhook", async (req, res) => {
-      console.log("Webhook received:", req.body);
-
-      const event = req.body;
-
-      const type = event.type || event.event || "unknown";
-
-      const data = event.data || event.order || event.withdrawal || {};
-
-      const owner = "233535679394@s.whatsapp.net";
-
-      // =========================
-      // ORDER CREATED
-      // =========================
-      if (type === "order.created") {
-        const message =
-          `🛒 *NEW ORDER*\n\n` +
-          `👤 ${data.customer_name || "Unknown"}\n` +
-          `📱 ${data.phone || "N/A"}\n` +
-          `💰 GHS ${data.amount || data.total || "0"}\n` +
-          `📌 ${data.status || "Pending"}\n` +
-          `🆔 ${data.id || "N/A"}`;
-
-        await sock.sendMessage(owner, {
-          text: message,
-        });
-      }
-
-      // =========================
-      // ORDER COMPLETED
-      // =========================
-      if (type === "order.completed") {
-        const message =
-          `✅ *ORDER COMPLETED*\n\n` +
-          `👤 ${data.customer_name || "Unknown"}\n` +
-          `💰 GHS ${data.amount || data.total || "0"}\n` +
-          `📦 Successfully Delivered`;
-
-        await sock.sendMessage(owner, {
-          text: message,
-        });
-      }
-
-      // =========================
-      // ORDER FAILED
-      // =========================
-      if (type === "order.failed") {
-        const message =
-          `❌ *ORDER FAILED*\n\n` +
-          `👤 ${data.customer_name || "Unknown"}\n` +
-          `💰 GHS ${data.amount || data.total || "0"}\n` +
-          `⚠ Delivery Failed`;
-
-        await sock.sendMessage(owner, {
-          text: message,
-        });
-      }
-
-      // =========================
-      // ORDER REFUNDED
-      // =========================
-      if (type === "order.refunded") {
-        const message =
-          `💸 *ORDER REFUNDED*\n\n` +
-          `👤 ${data.customer_name || "Unknown"}\n` +
-          `💰 Refunded: GHS ${data.amount || data.total || "0"}`;
-
-        await sock.sendMessage(owner, {
-          text: message,
-        });
-      }
-
-      // =========================
-      // WITHDRAWAL COMPLETED
-      // =========================
-      if (type === "withdrawal.completed") {
-        const message =
-          `🏦 *WITHDRAWAL COMPLETED*\n\n` +
-          `💰 Amount: GHS ${data.amount || "0"}\n` +
-          `📌 Status: Completed`;
-
-        await sock.sendMessage(owner, {
-          text: message,
-        });
-      }
-
-      // =========================
-      // WITHDRAWAL REFUNDED
-      // =========================
-      if (type === "withdrawal.refunded") {
-        const message =
-          `↩ *WITHDRAWAL REFUNDED*\n\n` +
-          `💰 Amount: GHS ${data.amount || "0"}\n` +
-          `⚠ Withdrawal Reversed`;
-
-        await sock.sendMessage(owner, {
-          text: message,
-        });
-      }
-
-      res.sendStatus(200);
-    });
-
-    app.listen(3000, () => {
-      console.log("Webhook server running on port 3000");
-    });
 
     // MENU
     if (text.toLowerCase() === "menu") {
@@ -322,43 +210,52 @@ async function startBot() {
     }
 
     // BALANCE
-    if (text.toLowerCase() === "balance") {
+    if (command === "balance") {
       const balance = await getBalance();
 
-      await sock.sendMessage(from, {
-        text:
+      await sendBanner(
+        sock,
+        from,
+
+        BOT_BANNER +
           `💳 *Wallet Balance*\n\n` +
           `Deposit: ${balance.currency} ${balance.deposit}\n` +
           `Earnings: ${balance.currency} ${balance.earnings}\n` +
           `Pending: ${balance.currency} ${balance.pending}`,
-      });
+      );
+
+      return;
     }
     // ORDERS
-    if (text.toLowerCase() === "orders") {
+    if (command === "orders") {
       const orders = await getOrders();
 
       if (!orders || orders.length === 0) {
-        await sock.sendMessage(from, {
-          text: "No orders found.",
-        });
+        await sendBanner(
+          sock,
+          from,
+          BOT_BANNER + "📦 *Latest Orders*\n\nNo orders found.",
+        );
 
         return;
       }
 
       // HELP
-      if (text.toLowerCase() === "help") {
-        await sock.sendMessage(from, {
-          text:
+      if (command === "help") {
+        await sendBanner(
+          sock,
+          from,
+          BOT_BANNER +
             "🤖 STORE BOT HELP\n\n" +
             "orders → latest orders\n" +
             "balance → wallet balance\n" +
             "stats → store stats\n" +
             "ping → test bot",
-        });
+        );
       }
 
       // STATS
-      if (text.toLowerCase() === "stats") {
+      if (command === "stats") {
         const orders = await getOrders();
 
         const totalOrders = orders.length;
@@ -369,12 +266,14 @@ async function startBot() {
           totalAmount += Number(o.amount || o.total || 0);
         });
 
-        await sock.sendMessage(from, {
-          text:
+        await sendBanner(
+          sock,
+          from,
+          BOT_BANNER +
             `📊 STORE STATS\n\n` +
             `📦 Orders: ${totalOrders}\n` +
             `💰 Revenue: GHS ${totalAmount}`,
-        });
+        );
       }
 
       let reply = "📦 *Latest Orders*\n\n";
@@ -389,10 +288,115 @@ async function startBot() {
           `📌 ${order.status || "Pending"}\n\n`;
       });
 
-      await sock.sendMessage(from, {
-        text: reply,
+      await sendBanner(sock, from, BOT_BANNER + reply);
+    }
+  });
+
+  app.post("/webhook", async (req, res) => {
+    console.log("Webhook received:", req.body);
+
+    const event = req.body;
+
+    const type = event.type || event.event || "unknown";
+
+    const data = event.data || event.order || event.withdrawal || {};
+
+    const owner = "233535679394@s.whatsapp.net";
+
+    // =========================
+    // ORDER CREATED
+    // =========================
+    if (type === "order.created") {
+      const message =
+        `🛒 *NEW ORDER*\n\n` +
+        `👤 ${data.customer_name || "Unknown"}\n` +
+        `📱 ${data.phone || "N/A"}\n` +
+        `💰 GHS ${data.amount || data.total || "0"}\n` +
+        `📌 ${data.status || "Pending"}\n` +
+        `🆔 ${data.id || "N/A"}`;
+
+      await sock.sendMessage(owner, {
+        text: message,
       });
     }
+
+    // =========================
+    // ORDER COMPLETED
+    // =========================
+    if (type === "order.completed") {
+      const message =
+        `✅ *ORDER COMPLETED*\n\n` +
+        `👤 ${data.customer_name || "Unknown"}\n` +
+        `💰 GHS ${data.amount || data.total || "0"}\n` +
+        `📦 Successfully Delivered`;
+
+      await sock.sendMessage(owner, {
+        text: message,
+      });
+    }
+
+    // =========================
+    // ORDER FAILED
+    // =========================
+    if (type === "order.failed") {
+      const message =
+        `❌ *ORDER FAILED*\n\n` +
+        `👤 ${data.customer_name || "Unknown"}\n` +
+        `💰 GHS ${data.amount || data.total || "0"}\n` +
+        `⚠ Delivery Failed`;
+
+      await sock.sendMessage(owner, {
+        text: message,
+      });
+    }
+
+    // =========================
+    // ORDER REFUNDED
+    // =========================
+    if (type === "order.refunded") {
+      const message =
+        `💸 *ORDER REFUNDED*\n\n` +
+        `👤 ${data.customer_name || "Unknown"}\n` +
+        `💰 Refunded: GHS ${data.amount || data.total || "0"}`;
+
+      await sock.sendMessage(owner, {
+        text: message,
+      });
+    }
+
+    // =========================
+    // WITHDRAWAL COMPLETED
+    // =========================
+    if (type === "withdrawal.completed") {
+      const message =
+        `🏦 *WITHDRAWAL COMPLETED*\n\n` +
+        `💰 Amount: GHS ${data.amount || "0"}\n` +
+        `📌 Status: Completed`;
+
+      await sock.sendMessage(owner, {
+        text: message,
+      });
+    }
+
+    // =========================
+    // WITHDRAWAL REFUNDED
+    // =========================
+    if (type === "withdrawal.refunded") {
+      const message =
+        `↩ *WITHDRAWAL REFUNDED*\n\n` +
+        `💰 Amount: GHS ${data.amount || "0"}\n` +
+        `⚠ Withdrawal Reversed`;
+
+      await sock.sendMessage(owner, {
+        text: message,
+      });
+    }
+
+    res.sendStatus(200);
+  });
+
+  app.listen(3000, () => {
+    console.log("Webhook server running on port 3000");
   });
 }
 
