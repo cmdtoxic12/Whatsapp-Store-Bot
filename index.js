@@ -1,8 +1,22 @@
+const fs = require("fs");
 const express = require("express");
 const app = express();
 app.use(express.json());
 
 require("dotenv").config();
+
+const BOT_BANNER = `╔════════════════╗
+   🤖 C-LICON BOT
+╚════════════════╝
+
+`;
+
+async function sendBanner(sock, to, caption) {
+  await sock.sendMessage(to, {
+    image: fs.readFileSync("./assets/logo.jpg"),
+    caption,
+  });
+}
 
 const {
   default: makeWASocket,
@@ -76,13 +90,48 @@ async function startBot() {
     if (command === "menu") {
       await sock.sendMessage(from, {
         text:
+         await sendBanner(
+    sock,
+    from,
+          BOT_BANNER +
           "📋 *COMMANDS*\n\n" +
           "menu\n" +
           "orders\n" +
           "balance\n" +
           "stats\n" +
           "help\n" +
+          "track ORDER_REFERENCE\n" +
           "ping",
+      });
+
+      return;
+    }
+
+    if (command.startsWith("track ")) {
+      const reference = command.split(" ")[1];
+
+      if (!reference) {
+        await sock.sendMessage(from, {
+          text: "Send like this:\ntrack API-LX5GZ4-A1B2C3D4",
+        });
+        return;
+      }
+
+      const order = await getOrder(reference);
+
+      await sock.sendMessage(from, {
+        text:
+         await sendBanner(
+    sock,
+    from,
+          BOT_BANNER +
+          `📦 *ORDER TRACKING*\n\n` +
+          `🆔 ${order.reference || "N/A"}\n` +
+          `📱 ${order.phoneNumber || "N/A"}\n` +
+          `🌐 ${order.network || "N/A"}\n` +
+          `📦 ${order.capacity || "N/A"}GB\n` +
+          `💰 GHS ${order.price || "0"}\n` +
+          `📌 Status: *${order.status || "N/A"}*`,
       });
 
       return;
@@ -92,6 +141,10 @@ async function startBot() {
     if (command === "help") {
       await sock.sendMessage(from, {
         text:
+         await sendBanner(
+    sock,
+    from,
+          BOT_BANNER +
           "🤖 *STORE BOT HELP*\n\n" +
           "menu → Show commands\n" +
           "orders → Latest orders\n" +
@@ -125,6 +178,10 @@ async function startBot() {
 
       await sock.sendMessage(from, {
         text:
+         await sendBanner(
+    sock,
+    from,
+          BOT_BANNER +
           "📊 *STORE STATS*\n\n" +
           `📦 Total Orders: ${totalOrders}\n` +
           `✅ Completed: ${completedOrders}\n` +
@@ -366,6 +423,20 @@ async function getBalance() {
     pending: data.earnings.pendingBalance,
     currency: data.deposit.currency || "GHS",
   };
+}
+
+// GET SINGLE ORDER
+async function getOrder(reference) {
+  const res = await axios.get(
+    `${process.env.STORE_API_BASE}/orders/${reference}`,
+    {
+      headers: {
+        Authorization: `Bearer ${process.env.STORE_API_KEY}`,
+      },
+    },
+  );
+
+  return res.data.data || res.data;
 }
 
 startBot();
