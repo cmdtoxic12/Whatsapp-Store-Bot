@@ -189,24 +189,10 @@ async function startBot() {
     }
     console.log("Message:", text);
 
-    // MENU
-    if (text.toLowerCase() === "menu") {
-      await sock.sendMessage(from, {
-        text:
-          "📋 COMMANDS\n\n" +
-          "orders\n" +
-          "balance\n" +
-          "stats\n" +
-          "ping\n" +
-          "help",
-      });
-    }
-
     // PING
-    if (text.toLowerCase() === "ping") {
-      await sock.sendMessage(from, {
-        text: "pong 🏓",
-      });
+    if (command === "ping") {
+      await sendBanner(sock, from, BOT_BANNER + "pong 🏓");
+      return;
     }
 
     // BALANCE
@@ -231,49 +217,9 @@ async function startBot() {
       const orders = await getOrders();
 
       if (!orders || orders.length === 0) {
-        await sendBanner(
-          sock,
-          from,
-          BOT_BANNER + "📦 *Latest Orders*\n\nNo orders found.",
-        );
+        await sendBanner(sock, from, BOT_BANNER + reply);
 
         return;
-      }
-
-      // HELP
-      if (command === "help") {
-        await sendBanner(
-          sock,
-          from,
-          BOT_BANNER +
-            "🤖 STORE BOT HELP\n\n" +
-            "orders → latest orders\n" +
-            "balance → wallet balance\n" +
-            "stats → store stats\n" +
-            "ping → test bot",
-        );
-      }
-
-      // STATS
-      if (command === "stats") {
-        const orders = await getOrders();
-
-        const totalOrders = orders.length;
-
-        let totalAmount = 0;
-
-        orders.forEach((o) => {
-          totalAmount += Number(o.amount || o.total || 0);
-        });
-
-        await sendBanner(
-          sock,
-          from,
-          BOT_BANNER +
-            `📊 STORE STATS\n\n` +
-            `📦 Orders: ${totalOrders}\n` +
-            `💰 Revenue: GHS ${totalAmount}`,
-        );
       }
 
       let reply = "📦 *Latest Orders*\n\n";
@@ -394,10 +340,6 @@ async function startBot() {
 
     res.sendStatus(200);
   });
-
-  app.listen(3000, () => {
-    console.log("Webhook server running on port 3000");
-  });
 }
 
 // GET ORDERS
@@ -444,3 +386,7 @@ async function getOrder(reference) {
 }
 
 startBot();
+
+app.listen(3000, () => {
+  console.log("Webhook server running on port 3000");
+});
