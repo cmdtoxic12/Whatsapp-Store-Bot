@@ -12,10 +12,18 @@ const BOT_BANNER = `╔════════════════╗
 `;
 
 async function sendBanner(sock, to, caption) {
-  await sock.sendMessage(to, {
-    image: fs.readFileSync("./assets/logo.jpg"),
-    caption,
-  });
+  const logoPath = "./assets/logo.jpg";
+
+  if (fs.existsSync(logoPath)) {
+    await sock.sendMessage(to, {
+      image: fs.readFileSync(logoPath),
+      caption,
+    });
+  } else {
+    await sock.sendMessage(to, {
+      text: caption,
+    });
+  }
 }
 
 const {
